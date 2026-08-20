@@ -242,6 +242,18 @@ with the recovered audio as the payoff.
 
 ---
 
+## ☕ Support Rifky The Cyber
+
+If you find this guide helpful and would like to support the work, you can buy me a coffee.
+
+**[☕ Support on Ko-fi](https://ko-fi.com/rifkythecyber)**
+
+Or scan the QR code below:
+
+<img src="kofi-qr.png" alt="Support Rifky The Cyber on Ko-fi" width="200">
+
+---
+
 ## References
 
 - osmo-gmr: https://github.com/osmocom/osmo-gmr
