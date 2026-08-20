@@ -167,6 +167,53 @@ alongside this README.
 
 ---
 
+## Control-plane example (location update)
+
+The voice call above is the main event. There is a second example on the same wiki that
+decrypts a **location update** instead of a voice call. It produces no audio, it produces
+**signalling**, so it is the better one to show on screen: you can freeze the encrypted frame,
+apply the Kc, and watch the exact same frame turn into a readable Mobility Management message.
+
+| File | Role |
+|------|------|
+| `tnt-locupd-267-93600.cfile` | BCCH / control carrier |
+| `tnt-locupd-268-93600.cfile` | TCH / traffic carrier |
+| **Kc** | `eb9c4d2b0d027131` (16 hex chars, already correct on the wiki) |
+
+This path stops at `gmr1_rx` plus Wireshark. There is no AMBE / WAV / MP3 stage.
+
+```bash
+cd ~/Desktop/osmo-gmr
+bunzip2 tnt-locupd-267-93600.cfile.bz2 tnt-locupd-268-93600.cfile.bz2   # if still compressed
+
+# watch the decrypted signalling live (separate terminal)
+sudo tshark -i lo -f 'port 4729' -Y 'gsm_a.dtap' -V
+
+# decode + decrypt (BCCH first, TCH second, then the Kc)
+./src/gmr1_rx 4 tnt-locupd-267-93600.cfile tnt-locupd-268-93600.cfile eb9c4d2b0d027131
+```
+
+**What the Kc actually buys you.** The cipher boundary is the **Ciphering Mode Command**.
+Everything before it is sent in the clear and is readable with or without the Kc; everything
+after it is encrypted and only becomes readable once the Kc is applied.
+
+- Readable in **both** (clear-text, Kc changes nothing): BCCH System Information, CCCH paging
+  (which carries TMSIs in the clear, so decryption does not "reveal" those), Immediate
+  Assignment, the Authentication Request, and the Ciphering Mode Command itself.
+- Readable **only after decryption**: the **Location Updating Accept**, carrying the Location
+  Area Identification (in this sample MCC 901 / MNC 05 Thuraya RMSS / LAC 1312), and an **MM
+  Information** message pushing the network name and time zone. In the undeciphered capture
+  those two frames dead-end at `gmr1.dtap` (Wireshark sees a DTAP frame but cannot read
+  inside it); with the Kc they continue to `gsm_a.dtap` and dissect fully.
+
+**Two ways to see it.** The wiki also ships ready-made pcaps, `tnt-locupd.pcap` (encrypted)
+and `tnt-locupd-deciphered.pcap` (Sylvain's pre-decrypted version). So a viewer can either
+decode the cfiles themselves with the Kc using the command above, or simply open the
+deciphered pcap in Wireshark. State on camera which one you are demonstrating, so nobody
+thinks the pcap decrypted itself.
+
+---
+
 ## Managing expectations (honesty for the video)
 
 The example capture is **partially redacted by Sylvain Munaut for privacy**: some bursts are
@@ -199,6 +246,8 @@ with the recovered audio as the payoff.
 - osmo-gmr: https://github.com/osmocom/osmo-gmr
 - Live branch (`gmr1_rx_live`): https://github.com/osmocom/osmo-gmr/tree/sylvain/live
 - Example data + Kc (Sylvain Munaut): https://osmocom.org/projects/gmr/wiki/Example_Data
+- A5-GMR-1 cipher (A5/2 lineage): https://projects.osmocom.org/projects/gmr/wiki/A5-GMR-1
+- Provenance + redaction note (Sylvain, mailing list): https://www.mail-archive.com/gmr@lists.osmocom.org/msg00031.html
 - osmo-gmr / voice codec talk, 31C3 (2014): "osmo-gmr: What's up with sat-phones?"
 - Driessen et al., GMR cipher analysis: https://eprint.iacr.org/2012/051.pdf
 
