@@ -75,9 +75,10 @@ which is why the decoder runs with `sps = 4`.
 
 ### Use the 16-character Kc
 
-A GMR-1 Kc is 64 bits, that is 8 bytes, that is always **16 hex characters**. The value on
-the old osmocom mailing list, `ebc34fcbd572466`, is only **15** characters (one digit was
-dropped in the email). The authoritative wiki value is `ebc34fcbd572466c`.
+A GMR-1 Kc is 64 bits, that is 8 bytes, that is always **16 hex characters**. The wiki lists
+the correct value, `ebc34fcbd572466c`. A **15-character** variant, `ebc34fcbd572466`, is only
+one hex digit short and appears in an old 2020 mailing-list post (and in some guides copied
+from it); it is not the wiki value. Use the 16-character wiki value.
 
 The truncated version parses to a wrong final byte, produces the wrong A5-GMR-1 keystream,
 and decodes to **noise with no error message**. Always use `ebc34fcbd572466c`.
